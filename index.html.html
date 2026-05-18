@@ -288,6 +288,56 @@
     body { background: #fff; }
   }
 
+  /* ── RESPONSIVE ── */
+  @media (max-width: 720px) {
+    .document { margin: 56px 0 0; }
+
+    /* Toolbar compacta */
+    .toolbar { padding: 8px 16px; flex-wrap: wrap; gap: 8px; }
+    .toolbar-left { flex: 1; }
+    .toolbar div:last-child { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn { padding: 6px 12px; font-size: 12px; }
+    #mode-label { display: none; }
+
+    /* Header empilhado */
+    .doc-header { flex-direction: column; padding: 36px 24px 32px; gap: 24px; }
+    .doc-title { font-size: 32px; }
+    .header-right { width: 100%; min-width: unset; }
+
+    /* Body com menos padding */
+    .doc-body { padding: 32px 20px; }
+
+    /* Grids para 1 coluna */
+    .features-grid { grid-template-columns: 1fr; }
+    .dif-grid { grid-template-columns: repeat(2, 1fr); }
+    .about-stats { grid-template-columns: repeat(3, 1fr); }
+    .plans-grid { grid-template-columns: 1fr; gap: 16px; }
+
+    /* Planos sem hover transform no mobile */
+    .plan-card:hover { transform: none; }
+
+    /* Header do plano mais compacto */
+    .plan-header { padding: 22px 20px 16px; }
+    .plan-body { padding: 18px 20px 22px; }
+    .price-value { font-size: 36px; }
+
+    /* Banner de economia empilhado */
+    .savings-banner { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+    /* Footer empilhado */
+    .doc-footer { flex-direction: column; gap: 16px; text-align: center; padding: 28px 24px; }
+    .footer-right { text-align: center; }
+  }
+
+  @media (max-width: 400px) {
+    .dif-grid { grid-template-columns: 1fr 1fr; }
+    .about-stats { grid-template-columns: 1fr 1fr; }
+    .doc-title { font-size: 28px; }
+  }
+
+  /* Fix overflow nos grids de desktop */
+  .plans-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+
   /* ── TOAST ── */
   .toast {
     position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
@@ -428,7 +478,7 @@
             <li><svg viewBox="0 0 16 16" fill="none" stroke-width="2"><polyline points="2,8 6,12 14,4"/></svg><span>Divulgação de vagas</span></li>
             <li><svg viewBox="0 0 16 16" fill="none" stroke-width="2"><polyline points="2,8 6,12 14,4"/></svg><span>Ideal para processos seletivos pontuais</span></li>
           </ul>
-          <button class="plan-cta">Quero este plano</button>
+          <button class="plan-cta" onclick="event.stopPropagation(); abrirWpp('Mensal')">Quero este plano</button>
         </div>
       </div>
 
@@ -465,13 +515,12 @@
             <li><svg viewBox="0 0 16 16" fill="none" stroke-width="2"><polyline points="2,8 6,12 14,4"/></svg><span>Matching inteligente contínuo</span></li>
             <li><svg viewBox="0 0 16 16" fill="none" stroke-width="2"><polyline points="2,8 6,12 14,4"/></svg><span>Suporte estratégico e operacional</span></li>
           </ul>
-          <button class="plan-cta">Quero este plano</button>
+          <button class="plan-cta" onclick="event.stopPropagation(); abrirWppAnual()">Quero este plano</button>
         </div>
       </div>
     </div>
 
     <!-- SAVINGS -->
-    <div class="savings-banner">
       <span class="savings-badge" style="display:flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Economia</span>
       <span>No plano Anual via Pix você paga o equivalente a <strong>R$ 30,42/mês</strong> — menos da metade do plano mensal. Uma operação de RH inteligente o ano todo.</span>
     </div>
@@ -498,6 +547,21 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  const WPP = '5593991312413';
+
+  function abrirWpp(plano) {
+    const msg = encodeURIComponent(`Olá! Tenho interesse no *Plano ${plano}* da Norte Empregos. Podem me passar mais informações?`);
+    window.open(`https://wa.me/${WPP}?text=${msg}`, '_blank');
+  }
+
+  function abrirWppAnual() {
+    const isInstall = document.getElementById('card-anual').classList.contains('show-install');
+    const pagamento = isInstall ? '12x de R$ 37,00 (parcelado)' : 'R$ 365,00 à vista no Pix';
+    const msg = encodeURIComponent(`Olá! Tenho interesse no *Plano Anual* da Norte Empregos — ${pagamento}. Podem me passar mais informações?`);
+    window.open(`https://wa.me/${WPP}?text=${msg}`, '_blank');
+  }
+
+
   const now = new Date();
   const fmt = d => d.toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'});
   document.getElementById('prop-date').textContent = fmt(now);
