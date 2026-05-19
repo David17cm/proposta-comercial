@@ -345,6 +345,84 @@
     font-size: 13px; opacity: 0; transition: all .3s; pointer-events: none; z-index: 200;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── COUNTDOWN ── */
+  .countdown-bar {
+    background: var(--norte-dark-green);
+    padding: 10px 64px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .countdown-bar.urgent { background: #7f1d1d; }
+  .countdown-bar.expired { background: #374151; }
+  .countdown-label {
+    font-size: 12px; color: rgba(255,255,255,.6);
+    text-transform: uppercase; letter-spacing: .08em;
+  }
+  .countdown-timer {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .countdown-unit {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .countdown-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px; color: #fff; line-height: 1;
+    background: rgba(255,255,255,.1); border-radius: 6px;
+    padding: 4px 10px; min-width: 42px; text-align: center;
+  }
+  .countdown-bar.urgent .countdown-num { background: rgba(255,255,255,.15); }
+  .countdown-unit span { font-size: 10px; color: rgba(255,255,255,.45); text-transform: uppercase; letter-spacing: .06em; }
+  .countdown-sep { font-size: 20px; color: rgba(255,255,255,.3); margin-bottom: 12px; }
+  .countdown-expired { font-size: 13px; color: rgba(255,255,255,.7); font-style: italic; }
+  .countdown-days-selector {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .days-label { font-size: 12px; color: rgba(255,255,255,.55); }
+  .days-select {
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+    color: #fff; border-radius: 5px; padding: 4px 8px; font-size: 12px;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+  }
+  .days-select option { background: var(--norte-dark-green); color: #fff; }
+
+  @media (max-width: 720px) {
+    .countdown-bar { padding: 10px 20px; flex-direction: column; align-items: flex-start; gap: 10px; }
+    .countdown-num { font-size: 18px; min-width: 36px; }
+  }
+
+  .fade-up {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity .55s cubic-bezier(.22,.61,.36,1), transform .55s cubic-bezier(.22,.61,.36,1);
+  }
+  .fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .fade-up.delay-1 { transition-delay: .08s; }
+  .fade-up.delay-2 { transition-delay: .16s; }
+  .fade-up.delay-3 { transition-delay: .24s; }
+  .fade-up.delay-4 { transition-delay: .32s; }
+
+  /* Header animado separado (não usa fade-up pois já está visível) */
+  .doc-header .header-left,
+  .doc-header .header-right {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .doc-header .header-right { transition-delay: .15s; }
+  .header-animate .header-left,
+  .header-animate .header-right {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fade-up, .doc-header .header-left, .doc-header .header-right {
+      opacity: 1 !important; transform: none !important; transition: none !important;
+    }
+  }
 </style>
 </head>
 <body>
@@ -395,12 +473,40 @@
     </div>
   </div>
 
+  <!-- COUNTDOWN BAR -->
+  <div class="countdown-bar" id="countdown-bar">
+    <div>
+      <div class="countdown-label">⏳ Proposta válida por</div>
+    </div>
+    <div class="countdown-timer" id="countdown-timer">
+      <div class="countdown-unit"><div class="countdown-num" id="cd-days">--</div><span>dias</span></div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-unit"><div class="countdown-num" id="cd-hours">--</div><span>horas</span></div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-unit"><div class="countdown-num" id="cd-mins">--</div><span>min</span></div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-unit"><div class="countdown-num" id="cd-secs">--</div><span>seg</span></div>
+    </div>
+    <!-- Só visível no modo edição -->
+    <div class="countdown-days-selector" id="days-selector" style="display:none">
+      <span class="days-label">Validade:</span>
+      <select class="days-select" id="days-input" onchange="setCountdownDays(this.value)">
+        <option value="3">3 dias</option>
+        <option value="5">5 dias</option>
+        <option value="7" selected>7 dias</option>
+        <option value="10">10 dias</option>
+        <option value="15">15 dias</option>
+        <option value="30">30 dias</option>
+      </select>
+    </div>
+  </div>
+
   <!-- BODY -->
   <div class="doc-body">
 
     <!-- ABOUT -->
-    <div class="section-label">O que é a Norte Empregos</div>
-    <div class="about-grid">
+    <div class="section-label fade-up">O que é a Norte Empregos</div>
+    <div class="about-grid fade-up delay-1">
       <div class="about-text">
         <p contenteditable="false">A Norte Empregos é uma plataforma focada em recrutamento, seleção e gestão inteligente de candidatos, desenvolvida para ajudar empresas a encontrarem profissionais de forma mais rápida, organizada e estratégica. Com uma interface moderna e intuitiva, centralizamos todo o processo seletivo em um único ambiente online — acessível de qualquer lugar.</p>
       </div>
@@ -423,8 +529,8 @@
     <div class="divider"></div>
 
     <!-- WHAT WE DELIVER -->
-    <div class="section-label">O que a plataforma entrega</div>
-    <div class="features-grid">
+    <div class="section-label fade-up">O que a plataforma entrega</div>
+    <div class="features-grid fade-up delay-1">
       <div class="feature-item"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>Cadastro completo de candidatos</div>
       <div class="feature-item"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>Banco de currículos inteligente</div>
       <div class="feature-item"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>Divulgação de vagas</div>
@@ -440,8 +546,8 @@
     <div class="divider"></div>
 
     <!-- DIFERENCIAIS -->
-    <div class="section-label">Diferenciais</div>
-    <div class="dif-grid">
+    <div class="section-label fade-up">Diferenciais</div>
+    <div class="dif-grid fade-up delay-1">
       <div class="dif-item"><div class="dif-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#008D4C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="dif-text">Plataforma simples e rápida</div></div>
       <div class="dif-item"><div class="dif-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#008D4C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="7" y1="15" x2="9" y2="15"/><line x1="12" y1="15" x2="17" y2="15"/></svg></div><div class="dif-text">Melhor organização de candidatos</div></div>
       <div class="dif-item"><div class="dif-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#008D4C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></div><div class="dif-text">Sistema em constante evolução</div></div>
@@ -451,7 +557,7 @@
     <div class="divider"></div>
 
     <!-- PLANS -->
-    <div class="plans-intro">
+    <div class="plans-intro fade-up">
       <div class="section-label">Planos disponíveis</div>
       <h2>Escolha o melhor para você</h2>
       <p>Clique no plano para selecioná-lo. No plano Anual, escolha a forma de pagamento que preferir.</p>
@@ -459,7 +565,7 @@
 
     <div class="plans-grid">
       <!-- PLANO MENSAL -->
-      <div class="plan-card plan-avulso" onclick="selectPlan(this, 'mensal')">
+      <div class="plan-card plan-avulso fade-up delay-1" onclick="selectPlan(this, 'mensal')">
         <div class="plan-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
         <div class="plan-header">
           <div class="plan-badge">Agosto</div>
@@ -483,7 +589,7 @@
       </div>
 
       <!-- PLANO ANUAL -->
-      <div class="plan-card plan-anual" id="card-anual" onclick="selectPlan(this, 'anual')">
+      <div class="plan-card plan-anual fade-up delay-2" id="card-anual" onclick="selectPlan(this, 'anual')">
         <div class="plan-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
         <div class="plan-header">
           <div class="plan-badge">Melhor custo-benefício</div>
@@ -521,13 +627,14 @@
     </div>
 
     <!-- SAVINGS -->
+    <div class="savings-banner fade-up">
       <span class="savings-badge" style="display:flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Economia</span>
       <span>No plano Anual via Pix você paga o equivalente a <strong>R$ 30,42/mês</strong> — menos da metade do plano mensal. Uma operação de RH inteligente o ano todo.</span>
     </div>
 
     <!-- NEXT STEPS -->
-    <div class="section-label">Próximos passos</div>
-    <p style="font-size:14px;color:var(--text-muted);line-height:1.75;margin-bottom:32px" contenteditable="false">Após a confirmação do plano escolhido, enviaremos o acesso à plataforma em até <strong>1 dia útil</strong>. Nossa equipe estará disponível para apoiar a configuração inicial e tirar todas as suas dúvidas.</p>
+    <div class="section-label fade-up">Próximos passos</div>
+    <p class="fade-up delay-1" style="font-size:14px;color:var(--text-muted);line-height:1.75;margin-bottom:32px" contenteditable="false">Após a confirmação do plano escolhido, enviaremos o acesso à plataforma em até <strong>1 dia útil</strong>. Nossa equipe estará disponível para apoiar a configuração inicial e tirar todas as suas dúvidas.</p>
 
   </div>
 
@@ -597,16 +704,19 @@
     editing = !editing;
     const doc = document.getElementById('doc');
     const label = document.getElementById('mode-label');
+    const selector = document.getElementById('days-selector');
     doc.querySelectorAll('[contenteditable]').forEach(el => {
       el.contentEditable = editing ? 'true' : 'false';
     });
     if (editing) {
       doc.classList.add('edit-mode');
       label.textContent = '— modo edição ativo';
+      if (selector) selector.style.display = 'flex';
       showToast('Clique em qualquer texto para editar');
     } else {
       doc.classList.remove('edit-mode');
       label.textContent = '— visualização';
+      if (selector) selector.style.display = 'none';
       showToast('Alterações salvas ✓');
     }
   }
@@ -619,6 +729,45 @@
 
   // ── CAMPOS QUE SERÃO SALVOS NA URL ──
   const CAMPOS = ['client-name', 'client-company', 'valid-until', 'company-name', 'footer-contact'];
+
+  // ── COUNTDOWN ──
+  let countdownInterval = null;
+
+  function setCountdownDays(days) {
+    const expires = Date.now() + (parseInt(days) * 24 * 60 * 60 * 1000);
+    sessionStorage.setItem('proposta-expires', expires);
+    startCountdown(expires);
+  }
+
+  function startCountdown(expires) {
+    if (countdownInterval) clearInterval(countdownInterval);
+    const bar = document.getElementById('countdown-bar');
+
+    function tick() {
+      const diff = expires - Date.now();
+      if (diff <= 0) {
+        clearInterval(countdownInterval);
+        bar.classList.add('expired');
+        document.getElementById('countdown-timer').innerHTML = '<div class="countdown-expired">Esta proposta expirou.</div>';
+        return;
+      }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      document.getElementById('cd-days').textContent  = String(d).padStart(2,'0');
+      document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+      document.getElementById('cd-mins').textContent  = String(m).padStart(2,'0');
+      document.getElementById('cd-secs').textContent  = String(s).padStart(2,'0');
+
+      // Vermelho quando restar menos de 24h
+      if (diff < 86400000) bar.classList.add('urgent');
+      else bar.classList.remove('urgent');
+    }
+    tick();
+    countdownInterval = setInterval(tick, 1000);
+  }
+
 
   // Carrega da URL ao abrir
   function carregarDaURL() {
@@ -635,7 +784,31 @@
       }
     });
   }
+  // ── SCROLL ANIMATIONS ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // Header anima logo ao carregar
+  setTimeout(() => {
+    document.querySelector('.doc-header')?.classList.add('header-animate');
+  }, 100);
+
+
+  if (location.search.includes('client-name') || location.search.includes('client-company')) {
+    document.querySelector('.toolbar').style.display = 'none';
+    document.querySelector('.document').style.marginTop = '0';
+  }
+
   carregarDaURL();
+  initCountdown();
 
   function gerarLink() {
     const p = new URLSearchParams();
@@ -643,16 +816,51 @@
       const el = document.getElementById(id);
       if (el) p.set(id, encodeURIComponent(el.textContent.trim()));
     });
+    // Salva o expires atual na URL
+    const days = document.getElementById('days-input')?.value || 7;
+    const expires = Date.now() + (parseInt(days) * 24 * 60 * 60 * 1000);
+    p.set('expires', expires);
     return location.origin + location.pathname + '?' + p.toString();
   }
 
-  function copyLink() {
-    const link = gerarLink();
-    navigator.clipboard.writeText(link)
-      .then(() => showToast('Link com dados do cliente copiado ✓'))
-      .catch(() => {
-        prompt('Copie o link abaixo:', link);
-      });
+  // Inicia countdown ao carregar (de URL ou default 7 dias)
+  function initCountdown() {
+    const p = new URLSearchParams(location.search);
+    const urlExpires = p.get('expires');
+    if (urlExpires) {
+      startCountdown(parseInt(urlExpires));
+    } else {
+      // Modo edição: inicia com 7 dias por padrão
+      setCountdownDays(7);
+    }
+  }
+
+  async function copyLink() {
+    const cliente = document.getElementById('client-name')?.textContent.trim() || '';
+    const empresa = document.getElementById('client-company')?.textContent.trim() || '';
+    const longUrl = gerarLink();
+
+    showToast('Encurtando link...');
+
+    try {
+      const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`);
+      const data = await res.json();
+      if (data.shorturl) {
+        await navigator.clipboard.writeText(data.shorturl);
+        const info = cliente || empresa ? ` para ${[cliente, empresa].filter(Boolean).join(' — ')}` : '';
+        showToast(`Link${info} copiado ✓`);
+      } else {
+        throw new Error('sem shorturl');
+      }
+    } catch {
+      // Fallback: copia o link longo mesmo
+      try {
+        await navigator.clipboard.writeText(longUrl);
+        showToast('Link copiado (sem encurtamento) ✓');
+      } catch {
+        prompt('Copie o link abaixo:', longUrl);
+      }
+    }
   }
 </script>
 </body>
